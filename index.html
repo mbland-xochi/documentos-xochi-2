@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Xochi · Gestión Documental ISO · v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css"/>
+<style>
+:root{
+  --bg:#F4F1EC; --surface:#FDFCFA; --surface2:#EFEDE8;
+  --border:rgba(60,50,30,.12); --border-strong:rgba(60,50,30,.22);
+  --text:#1C1914; --text-2:#6B6355; --text-3:#A09585;
+  --accent:#C4520A; --accent-light:#FBE9DB; --accent-text:#7D310A;
+  --green:#2D6A3F; --green-light:#D6EDDC; --green-text:#1A4228;
+  --amber:#8A5A00; --amber-light:#FFF0CC; --amber-text:#5C3A00;
+  --blue:#1A4A8A; --blue-light:#DCE9F8; --blue-text:#0D2E5C;
+  --red:#A32D2D; --red-light:#FCEBEB; --red-text:#501313;
+  --radius:10px; --radius-lg:16px; --radius-xl:22px;
+  --shadow:0 1px 3px rgba(60,50,30,.08),0 4px 16px rgba(60,50,30,.04);
+  --shadow-lg:0 8px 40px rgba(28,25,20,.22);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:14px;color:var(--text)}
+.mono{font-family:'DM Mono',monospace}
+
+/* Header */
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-mark{width:38px;height:38px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px}
+.brand h1{font-size:17px;font-weight:600;letter-spacing:-.01em}
+.brand small{display:block;color:var(--text-2);font-size:12px;font-weight:400}
+.pill{display:inline-block;background:var(--accent-light);color:var(--accent-text);font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;margin-left:6px;vertical-align:middle}
+.saving{font-size:12px;color:var(--text-2);display:flex;align-items:center;gap:6px;min-height:20px}
+.saving .dot{width:8px;height:8px;border-radius:50%;background:var(--text-3)}
+.saving.ok .dot{background:var(--green)} .saving.busy .dot{background:var(--amber)} .saving.err .dot{background:var(--red)}
+
+/* Nav */
+.tabs-nav{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:4px;padding:0 20px;overflow-x:auto}
+.tabs-nav a{display:flex;align-items:center;gap:8px;padding:14px 16px;text-decoration:none;color:var(--text-2);font-weight:500;font-size:14px;border-bottom:3px solid transparent;white-space:nowrap}
+.tabs-nav a:hover{color:var(--text)}
+.tabs-nav a.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tabs-nav .count{background:var(--surface2);color:var(--text-2);font-size:11px;font-weight:600;padding:1px 8px;border-radius:99px;font-family:'DM Mono',monospace}
+.tabs-nav a.active .count{background:var(--accent-light);color:var(--accent-text)}
+
+.banner{display:none;background:var(--amber-light);color:var(--amber-text);padding:10px 24px;font-size:13px;border-bottom:1px solid var(--border)}
+.banner.show{display:block}
+
+.wrap{max-width:1200px;margin:0 auto;padding:24px 20px 60px}
+.page{display:none} .page.active{display:block}
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.page-head h2{font-size:22px;font-weight:600;letter-spacing:-.01em}
+.page-head p{color:var(--text-2);font-size:14px;max-width:640px;margin-top:2px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);padding:9px 16px;border-radius:var(--radius);font-size:14px;font-weight:500;transition:.12s}
+.btn:hover{background:var(--surface2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:#A94408}
+.btn.danger{background:var(--red);border-color:var(--red);color:#fff}
+.btn.sm{padding:5px 10px;font-size:12.5px}
+.btn.icon{padding:6px 8px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* Cards / toolbar */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow)}
+.move-box{padding:14px 16px;margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--blue-light);border-color:transparent}
+.move-box .lbl{font-weight:600;color:var(--blue-text);font-size:13.5px;display:flex;align-items:center;gap:6px}
+.move-box select{flex:1;min-width:240px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.toolbar input[type=search]{flex:1;min-width:220px}
+.field,.toolbar input,.toolbar select,.move-box select,.form-grid input,.form-grid select,.form-grid textarea,.modal input,.modal select,.modal textarea{border:1px solid var(--border-strong);background:var(--surface);border-radius:var(--radius);padding:9px 12px;width:100%;outline:none}
+.toolbar select{width:auto}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+
+/* Table */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-2);padding:11px 14px;background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{color:var(--text)}
+td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(196,82,10,.025)}
+.code{font-family:'DM Mono',monospace;font-size:12.5px;font-weight:500;background:var(--surface2);padding:2px 7px;border-radius:6px;white-space:nowrap}
+.dname{font-weight:500}
+.dnote{color:var(--text-2);font-size:12.5px;margin-top:3px}
+.area-tag{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.area-dot{width:9px;height:9px;border-radius:50%}
+.folder{font-family:'DM Mono',monospace;font-size:11.5px;color:var(--text-2);word-break:break-word;max-width:260px}
+.chip{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:99px;white-space:nowrap}
+.chip.expired{background:var(--red-light);color:var(--red-text)}
+.chip.week{background:var(--red-light);color:var(--red-text)}
+.chip.biweek{background:var(--amber-light);color:var(--amber-text)}
+.chip.month{background:var(--blue-light);color:var(--blue-text)}
+.chip.ok{background:var(--green-light);color:var(--green-text)}
+.chip.none{background:var(--surface2);color:var(--text-3)}
+.actions{display:flex;gap:6px;white-space:nowrap}
+.empty{text-align:center;padding:48px 20px;color:var(--text-2)}
+.empty i{font-size:34px;color:var(--text-3);display:block;margin-bottom:8px}
+
+/* Forms */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-grid .full{grid-column:1/-1}
+.form-grid label,.fl{display:block;font-size:12.5px;font-weight:600;color:var(--text-2);margin-bottom:5px}
+.form-grid label .req{color:var(--accent)}
+.hint{font-size:12px;color:var(--text-3);margin-top:4px}
+.folder-row{display:grid;grid-template-columns:1fr 1.2fr 1.2fr;gap:8px}
+.folder-row input[readonly]{background:var(--surface2);color:var(--text-2)}
+.folder-preview{margin-top:8px;font-family:'DM Mono',monospace;font-size:12px;background:var(--surface2);border-radius:8px;padding:8px 10px;color:var(--text-2);word-break:break-word}
+.errbox{display:none;background:var(--red-light);color:var(--red-text);border-radius:var(--radius);padding:9px 12px;font-size:13px;margin-top:10px}
+.errbox.show{display:block}
+
+/* Modal */
+.overlay{position:fixed;inset:0;background:rgba(28,25,20,.5);display:none;align-items:flex-start;justify-content:center;padding:30px 16px;overflow-y:auto;z-index:50}
+.overlay.show{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);width:100%;max-width:680px;padding:24px}
+.modal.small{max-width:420px}
+.modal h3{font-size:18px;font-weight:600;margin-bottom:4px}
+.modal .sub{color:var(--text-2);font-size:13.5px;margin-bottom:16px}
+.modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+
+/* Email page */
+.email-grid{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:18px;align-items:start}
+.panel{padding:20px}
+.panel h3{font-size:15px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.step-n{background:var(--accent);color:#fff;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+.type-opt{display:flex;gap:10px;align-items:flex-start;border:1.5px solid var(--border);border-radius:var(--radius);padding:11px 12px;margin-bottom:8px;cursor:pointer;background:var(--surface)}
+.type-opt:hover{border-color:var(--border-strong)}
+.type-opt.sel{border-color:var(--accent);background:var(--accent-light)}
+.type-opt i{font-size:20px;color:var(--accent);margin-top:1px}
+.type-opt b{display:block;font-size:14px}
+.type-opt span{font-size:12.5px;color:var(--text-2)}
+.seg{display:inline-flex;background:var(--surface2);border-radius:var(--radius);padding:3px;margin-bottom:12px}
+.seg button{border:none;background:transparent;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;color:var(--text-2)}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+.subq{background:var(--surface2);border-radius:var(--radius);padding:10px 12px;margin-top:4px}
+.subq label{display:flex;gap:8px;align-items:center;font-size:13.5px;padding:4px 0;cursor:pointer}
+.out-field{margin-bottom:14px}
+.out-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.out-head span{font-size:12.5px;font-weight:600;color:var(--text-2)}
+.out-box{width:100%;border:1px solid var(--border-strong);border-radius:var(--radius);background:var(--surface);padding:12px 14px;font-family:'DM Mono',monospace;font-size:13px;line-height:1.6;resize:vertical}
+.note{font-size:12.5px;color:var(--text-2);background:var(--surface2);border-radius:var(--radius);padding:9px 12px;margin-top:10px}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:#fff;padding:11px 18px;border-radius:99px;font-size:13.5px;opacity:0;pointer-events:none;transition:.2s;z-index:100}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:860px){.email-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.folder-row{grid-template-columns:1fr}.header{padding:12px 16px}.wrap{padding:18px 14px 50px}}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="brand">
+    <div class="brand-mark"><i class="ti ti-road"></i></div>
+    <div><h1>Xochi · Gestión Documental ISO <span class="pill">v2</span></h1>
+    <small>ISO 9001 · 14001 · 39001 · 45001 · ENVISION</small></div>
+  </div>
+  <div class="saving" id="saving"><span class="dot"></span><span id="saving-txt">Listo</span></div>
+</header>
+
+<nav class="tabs-nav" id="nav"></nav>
+<div class="banner" id="banner"></div>
+
+<main class="wrap">
+  <section class="page" id="page-creacion"></section>
+  <section class="page" id="page-actualizacion"></section>
+  <section class="page" id="page-comunicacion"></section>
+  <section class="page" id="page-correo"></section>
+</main>
+
+<!-- Modal: nuevo / editar -->
+<div class="overlay" id="modal-doc">
+  <div class="modal">
+    <h3 id="m-title">Registrar documento</h3>
+    <p class="sub" id="m-sub"></p>
+    <div id="m-stage-wrap" style="display:none;margin-bottom:14px">
+      <label class="fl" for="m-stage">Etapa del documento</label>
+      <select id="m-stage"></select>
+      <div class="hint">Cambiar la etapa mueve el documento a otra página.</div>
+    </div>
+    <div id="m-form"></div>
+    <div class="errbox" id="m-dup"></div>
+    <div class="errbox" id="m-err"></div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('modal-doc')">Cancelar</button>
+      <button class="btn primary" id="m-save" onclick="saveModal()"><i class="ti ti-device-floppy"></i> Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: eliminar -->
+<div class="overlay" id="modal-del">
+  <div class="modal small">
+    <h3>Eliminar documento</h3>
+    <p class="sub" id="del-txt"></p>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('modal-del')">Cancelar</button>
+      <button class="btn danger" onclick="confirmDel()"><i class="ti ti-trash"></i> Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   CONFIGURACIÓN
+   Pega aquí la URL de tu Apps Script (Implementar → Aplicación web).
+   Si queda vacía, los datos solo se guardan en este navegador.
+   ========================================================= */
+const SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbygu6CxbLMVHamULLG2AESTxzWRwf_Bd5oDTvkeR4qTiawnF_ePPk471wRqLARiH-YdsA/exec';
+
+const AREAS = {
+  'Administración':'#6B5B95','Comercial':'#C4520A','Operación':'#1A4A8A','Seguridad':'#A32D2D',
+  'Mantenimiento':'#8A5A00','Ambiente':'#2D6A3F','Social':'#B0407A','Legal':'#4A5568'
+};
+
+const STAGES = {
+  creacion:{
+    title:'Creación de documentos', short:'Creación', icon:'ti-file-plus', sources:[],
+    desc:'Documentos que todavía no existen pero que deben crearse.',
+    empty:'No hay documentos pendientes de crear.'
+  },
+  actualizacion:{
+    title:'Actualización de documentos', short:'Actualización', icon:'ti-refresh', sources:['creacion'],
+    desc:'Documentos que existen y deben actualizarse. Puedes registrar uno nuevo o traer uno desde Creación.',
+    empty:'No hay documentos pendientes de actualizar.'
+  },
+  comunicacion:{
+    title:'Comunicación de documentos', short:'Comunicación', icon:'ti-speakerphone', sources:['creacion','actualizacion'],
+    desc:'Documentos listos que falta comunicar al jefe de área y su equipo. Puedes traerlos desde Creación o Actualización.',
+    empty:'No hay documentos pendientes de comunicar.'
+  }
+};
+const STAGE_KEYS = ['creacion','actualizacion','comunicacion'];
+
+const FOLDER_ROOT = '7 - Gestión & Procesos';
+const FOLDER_L2 = ['4. CONTEXTO DE LA ORGANIZACIÓN','5. LIDERAZGO','6. PLANIFICACIÓN','7. APOYO','8. OPERACIÓN','9. EVALUACIÓN DEL DESEMPEÑO','10. MEJORA'];
+
+const COLS = [
+  {key:'code',label:'Código',sortable:true},
+  {key:'name',label:'Documento',sortable:true},
+  {key:'area',label:'Jefe de área',sortable:true},
+  {key:'version',label:'Versión',sortable:true},
+  {key:'expiry',label:'Vencimiento',sortable:true},
+  {key:'folder',label:'Carpeta',sortable:false},
+  {key:'stageSince',label:'En esta etapa desde',sortable:true},
+  {key:'actions',label:'',sortable:false}
+];
+
+const EMAIL_TYPES = {
+  consultar:{label:'Para consultar el proceso con jefe de área',desc:'Pedir una reunión para revisar el proceso.',icon:'ti-messages'},
+  actualizar:{label:'Para solicitar actualización del documento',desc:'Pedir al jefe de área que actualice el documento.',icon:'ti-refresh'},
+  comunicar:{label:'Para comunicar proceso con jefe de área',desc:'Avisar que el proceso está listo y pedir que lo socialice.',icon:'ti-speakerphone'},
+  desempeno:{label:'Para ver el desempeño del proceso',desc:'Preguntar si se sigue el proceso y si se usa el formato.',icon:'ti-chart-line'}
+};
+const DEFAULT_TYPE_BY_STAGE = {creacion:'consultar',actualizacion:'actualizar',comunicacion:'comunicar'};
+
+/* ============ Utilidades ============ */
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function $(id){return document.getElementById(id);}
+function pad(n){return String(n).padStart(2,'0');}
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function parseDate(s){if(!s)return null;const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s);if(!m)return null;return new Date(+m[1],+m[2]-1,+m[3]);}
+function fmtDate(s){const d=parseDate(s);return d?pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear():'—';}
+function daysUntil(s){const d=parseDate(s);if(!d)return null;const t=parseDate(todayStr());return Math.round((d-t)/86400000);}
+function uid(){return 'd'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function expiryStatus(s){
+  const n=daysUntil(s); if(n===null)return {k:'none',t:'Sin fecha'};
+  if(n<0)return {k:'expired',t:'Vencido hace '+(-n)+' d'};
+  if(n<=7)return {k:'week',t:n===0?'Vence hoy':'Vence en '+n+' d'};
+  if(n<=14)return {k:'biweek',t:'Vence en '+n+' d'};
+  if(n<=31)return {k:'month',t:'Vence en '+n+' d'};
+  return {k:'ok',t:'Vigente'};
+}
+let toastT;
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600);}
+function openModal(id){$(id).classList.add('show');}
+function closeModal(id){$(id).classList.remove('show');}
+
+/* ============ Datos / persistencia ============ */
+let docs = [];
+const LS_KEY = 'xochi_v2_docs';
+
+function normalizeDoc(d){
+  const o = Object.assign({id:'',stage:'creacion',code:'',area:'',name:'',version:'',issued:'',expiry:'',email:'',folder:'',notes:'',created:'',updatedAt:'',stageSince:'',stageHistory:[]},d||{});
+  if(!STAGES[o.stage]) o.stage='creacion';
+  if(typeof o.stageHistory==='string'){try{o.stageHistory=JSON.parse(o.stageHistory||'[]');}catch(e){o.stageHistory=[];}}
+  if(!Array.isArray(o.stageHistory)) o.stageHistory=[];
+  ['id','code','area','name','version','issued','expiry','email','folder','notes','created','updatedAt','stageSince'].forEach(k=>{o[k]=o[k]==null?'':String(o[k]);});
+  if(!o.stageSince) o.stageSince=o.created||todayStr();
+  return o;
+}
+function saveLocal(){try{localStorage.setItem(LS_KEY,JSON.stringify(docs));}catch(e){}}
+function loadLocal(){try{const r=localStorage.getItem(LS_KEY);if(r)return JSON.parse(r).map(normalizeDoc);}catch(e){}return [];}
+
+function setSaving(state,txt){
+  const el=$('saving'); el.className='saving '+state; $('saving-txt').textContent=txt;
+}
+function showBanner(msg){const b=$('banner');if(msg){b.textContent=msg;b.classList.add('show');}else b.classList.remove('show');}
+
+async function apiCall(action,payload){
+  if(!SHEETS_API_URL) return {ok:true,local:true};
+  const r = await fetch(SHEETS_API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action},payload||{}))});
+  return r.json();
+}
+async function pushDoc(d){
+  saveLocal();
+  if(!SHEETS_API_URL){setSaving('','Solo en este navegador');return;}
+  setSaving('busy','Guardando…');
+  try{
+    const r=await apiCall('saveDoc',{doc:d});
+    if(r&&r.ok===false)throw new Error(r.error||'Error');
+    setSaving('ok','Guardado en Google Sheets'); showBanner('');
+  }catch(e){setSaving('err','Sin conexión'); showBanner('No se pudo guardar en Google Sheets. El cambio quedó en este navegador; vuelve a intentarlo cuando haya conexión.');}
+}
+async function pushDelete(id){
+  saveLocal();
+  if(!SHEETS_API_URL)return;
+  setSaving('busy','Guardando…');
+  try{
+    const r=await apiCall('deleteDoc',{id});
+    if(r&&r.ok===false)throw new Error(r.error||'Error');
+    setSaving('ok','Guardado en Google Sheets'); showBanner('');
+  }catch(e){setSaving('err','Sin conexión'); showBanner('No se pudo eliminar en Google Sheets. Vuelve a intentarlo.');}
+}
+async function loadDocs(){
+  docs = loadLocal();
+  if(!SHEETS_API_URL){setSaving('','Solo en este navegador');return;}
+  setSaving('busy','Cargando…');
+  try{
+    const r=await apiCall('getDocs');
+    if(!r||r.ok===false)throw new Error((r&&r.error)||'Error');
+    docs=(r.docs||[]).map(normalizeDoc); saveLocal();
+    setSaving('ok','Sincronizado con Google Sheets'); showBanner('');
+  }catch(e){setSaving('err','Sin conexión'); showBanner('No se pudo conectar con Google Sheets. Se muestran los datos guardados en este navegador.');}
+}
+
+/* ============ Formulario reutilizable ============ */
+function docFormHTML(p){
+  const areaOpts='<option value="">Selecciona…</option>'+Object.keys(AREAS).map(a=>`<option value="${esc(a)}">${esc(a)}</option>`).join('');
+  const l2Opts='<option value="">Selecciona…</option>'+FOLDER_L2.map(a=>`<option value="${esc(a)}">${esc(a)}</option>`).join('');
+  return `<div class="form-grid">
+    <div><label for="${p}-code">Código del documento <span class="req">*</span></label><input id="${p}-code" type="text" placeholder="Ej. XO-OP-PR-001" oninput="formChanged('${p}')"/></div>
+    <div><label for="${p}-version">Versión</label><input id="${p}-version" type="text" placeholder="Ej. 01" oninput="formChanged('${p}')"/></div>
+    <div class="full"><label for="${p}-name">Nombre del documento <span class="req">*</span></label><input id="${p}-name" type="text" placeholder="Ej. Procedimiento de atención de incidentes viales" oninput="formChanged('${p}')"/></div>
+    <div><label for="${p}-area">Área / jefe responsable <span class="req">*</span></label><select id="${p}-area" onchange="formChanged('${p}')">${areaOpts}</select></div>
+    <div><label for="${p}-email">Correo del jefe de área</label><input id="${p}-email" type="email" placeholder="nombre@xochi.gt" oninput="formChanged('${p}')"/></div>
+    <div><label for="${p}-issued">Fecha de emisión</label><input id="${p}-issued" type="date" onchange="formChanged('${p}')"/></div>
+    <div><label for="${p}-expiry">Fecha de vencimiento</label><input id="${p}-expiry" type="date" onchange="formChanged('${p}')"/></div>
+    <div class="full"><label>Carpeta donde se sube <span class="req">*</span></label>
+      <div class="folder-row">
+        <input type="text" value="${esc(FOLDER_ROOT)}" readonly aria-label="Carpeta 1"/>
+        <select id="${p}-f2" onchange="updateFolderPreview('${p}');formChanged('${p}')" aria-label="Carpeta 2">${l2Opts}</select>
+        <input id="${p}-f3" type="text" placeholder="Nombre de la carpeta 3" oninput="updateFolderPreview('${p}');formChanged('${p}')" aria-label="Carpeta 3"/>
+      </div>
+      <div class="folder-preview" id="${p}-fpreview"></div>
+    </div>
+    <div class="full"><label for="${p}-notes">Notas</label><textarea id="${p}-notes" rows="2" placeholder="Observaciones, cambios previstos, etc." oninput="formChanged('${p}')"></textarea></div>
+  </div>`;
+}
+function folderValue(p){
+  const l2=$(p+'-f2').value, l3=$(p+'-f3').value.trim();
+  if(!l2&&!l3) return '';
+  return [FOLDER_ROOT,l2||'…',l3||'…'].join(' / ');
+}
+function updateFolderPreview(p){
+  const v=folderValue(p);
+  $(p+'-fpreview').textContent = v || (FOLDER_ROOT+' / … / …');
+}
+function parseFolder(str){
+  if(!str) return {l2:'',l3:''};
+  const parts=String(str).split(' / ');
+  return {l2:parts[1]||'', l3:parts.slice(2).join(' / ')};
+}
+function readDocForm(p){
+  return {
+    code:$(p+'-code').value.trim(), name:$(p+'-name').value.trim(), area:$(p+'-area').value,
+    version:$(p+'-version').value.trim(), issued:$(p+'-issued').value, expiry:$(p+'-expiry').value,
+    email:$(p+'-email').value.trim(), notes:$(p+'-notes').value.trim(),
+    l2:$(p+'-f2').value, l3:$(p+'-f3').value.trim(), folder:folderValue(p)
+  };
+}
+function fillDocForm(p,d){
+  $(p+'-code').value=d.code||''; $(p+'-name').value=d.name||''; $(p+'-area').value=d.area||'';
+  $(p+'-version').value=d.version||''; $(p+'-issued').value=d.issued||''; $(p+'-expiry').value=d.expiry||'';
+  $(p+'-email').value=d.email||''; $(p+'-notes').value=d.notes||'';
+  const f=parseFolder(d.folder);
+  const sel=$(p+'-f2');
+  if(f.l2 && !FOLDER_L2.includes(f.l2)){const o=document.createElement('option');o.value=f.l2;o.textContent=f.l2;sel.appendChild(o);}
+  sel.value=f.l2; $(p+'-f3').value=f.l3;
+  updateFolderPreview(p);
+}
+function clearDocForm(p){fillDocForm(p,{});}
+function formChanged(p){ if(p==='e') regenerateEmail(); }
+
+/* ============ Modal nuevo / editar ============ */
+let modalCtx={mode:'new',stage:'creacion',id:null};
+
+function openNewModal(stage){
+  modalCtx={mode:'new',stage,id:null};
+  $('m-title').textContent='Registrar documento · '+STAGES[stage].short;
+  $('m-sub').textContent='Se agregará a la página «'+STAGES[stage].title+'».';
+  $('m-stage-wrap').style.display='none';
+  $('m-form').innerHTML=docFormHTML('m'); clearDocForm('m');
+  $('m-dup').classList.remove('show'); $('m-err').classList.remove('show');
+  openModal('modal-doc'); $('m-code').focus();
+}
+function openEditModal(id){
+  const d=docs.find(x=>x.id===id); if(!d)return;
+  modalCtx={mode:'edit',stage:d.stage,id};
+  $('m-title').textContent='Editar documento';
+  $('m-sub').textContent=d.code+' · '+d.name;
+  $('m-stage').innerHTML=STAGE_KEYS.map(k=>`<option value="${k}">${esc(STAGES[k].title)}</option>`).join('');
+  $('m-stage').value=d.stage; $('m-stage-wrap').style.display='block';
+  $('m-form').innerHTML=docFormHTML('m'); fillDocForm('m',d);
+  $('m-dup').classList.remove('show'); $('m-err').classList.remove('show');
+  openModal('modal-doc');
+}
+function saveModal(){
+  const v=readDocForm('m'); const err=$('m-err'), dup=$('m-dup');
+  err.classList.remove('show'); dup.classList.remove('show');
+  const miss=[];
+  if(!v.code)miss.push('código'); if(!v.area)miss.push('área'); if(!v.name)miss.push('nombre');
+  if(!v.l2||!v.l3)miss.push('carpeta (segundo y tercer nivel)');
+  if(miss.length){err.textContent='Falta completar: '+miss.join(', ')+'.';err.classList.add('show');return;}
+  const clash=docs.find(x=>x.code.toLowerCase()===v.code.toLowerCase() && x.id!==modalCtx.id);
+  if(clash){dup.textContent='Ya existe un documento con el código '+v.code+' (en «'+STAGES[clash.stage].short+'»). Usa otro código o edita el existente.';dup.classList.add('show');return;}
+  const now=new Date().toISOString(); let d;
+  if(modalCtx.mode==='edit'){
+    d=docs.find(x=>x.id===modalCtx.id); if(!d)return;
+    Object.assign(d,{code:v.code,name:v.name,area:v.area,version:v.version,issued:v.issued,expiry:v.expiry,email:v.email,folder:v.folder,notes:v.notes,updatedAt:now});
+    const ns=$('m-stage').value;
+    if(ns!==d.stage){d.stage=ns;d.stageSince=todayStr();d.stageHistory.push({stage:ns,date:todayStr()});}
+  } else {
+    d=normalizeDoc({id:uid(),stage:modalCtx.stage,code:v.code,name:v.name,area:v.area,version:v.version,issued:v.issued,expiry:v.expiry,email:v.email,folder:v.folder,notes:v.notes,created:todayStr(),updatedAt:now,stageSince:todayStr(),stageHistory:[{stage:modalCtx.stage,date:todayStr()}]});
+    docs.push(d);
+  }
+  closeModal('modal-doc'); renderAll(); pushDoc(d); toast('Documento guardado');
+}
+
+/* ============ Eliminar ============ */
+let delId=null;
+function openDel(id){const d=docs.find(x=>x.id===id);if(!d)return;delId=id;$('del-txt').textContent='¿Eliminar «'+d.code+' · '+d.name+'»? Esta acción no se puede deshacer.';openModal('modal-del');}
+function confirmDel(){
+  const id=delId; docs=docs.filter(x=>x.id!==id); delId=null;
+  closeModal('modal-del'); renderAll(); pushDelete(id); toast('Documento eliminado');
+}
+
+/* ============ Mover entre etapas ============ */
+function moveDoc(id,stage){
+  const d=docs.find(x=>x.id===id); if(!d||d.stage===stage)return;
+  d.stage=stage; d.stageSince=todayStr(); d.updatedAt=new Date().toISOString();
+  d.stageHistory.push({stage,date:todayStr()});
+  renderAll(); pushDoc(d); toast('Movido a «'+STAGES[stage].title+'»');
+}
+function moveFromSelect(stage){
+  const sel=$('move-'+stage); if(!sel||!sel.value){toast('Elige un documento primero');return;}
+  moveDoc(sel.value,stage);
+}
+function refreshMoveSelect(stage){
+  const sel=$('move-'+stage); if(!sel)return;
+  const src=STAGES[stage].sources; let html='<option value="">Selecciona un documento…</option>'; let n=0;
+  src.forEach(s=>{
+    const list=docs.filter(d=>d.stage===s).sort((a,b)=>a.code.localeCompare(b.code));
+    if(!list.length)return; n+=list.length;
+    html+=`<optgroup label="Desde ${esc(STAGES[s].short)}">`+list.map(d=>`<option value="${esc(d.id)}">${esc(d.code)} — ${esc(d.name)}</option>`).join('')+'</optgroup>';
+  });
+  sel.innerHTML=html; sel.disabled=!n;
+  if(!n) sel.innerHTML='<option value="">No hay documentos en '+src.map(s=>STAGES[s].short).join(' ni ')+'</option>';
+}
+
+/* ============ Páginas por etapa ============ */
+const viewState={}; STAGE_KEYS.forEach(k=>viewState[k]={q:'',area:'',sort:'stageSince',dir:'desc'});
+
+function buildStageShell(stage){
+  const S=STAGES[stage];
+  let html=`<div class="page-head"><div><h2>${esc(S.title)}</h2><p>${esc(S.desc)}</p></div>
+    <button class="btn primary" onclick="openNewModal('${stage}')"><i class="ti ti-plus"></i> Registrar documento</button></div>`;
+  if(S.sources.length){
+    html+=`<div class="card move-box"><span class="lbl"><i class="ti ti-arrow-right"></i> Traer desde ${S.sources.map(s=>esc(STAGES[s].short)).join(' o ')}:</span>
+      <select id="move-${stage}"></select>
+      <button class="btn primary" onclick="moveFromSelect('${stage}')"><i class="ti ti-arrow-move-right"></i> Mover aquí</button></div>`;
+  }
+  html+=`<div class="toolbar">
+      <input type="search" id="q-${stage}" placeholder="Buscar por código, nombre o notas…" oninput="viewState['${stage}'].q=this.value;renderStage('${stage}')"/>
+      <select id="a-${stage}" onchange="viewState['${stage}'].area=this.value;renderStage('${stage}')">
+        <option value="">Todas las áreas</option>${Object.keys(AREAS).map(a=>`<option value="${esc(a)}">${esc(a)}</option>`).join('')}
+      </select></div>
+    <div class="card"><div class="tbl-wrap" id="tbl-${stage}"></div></div>`;
+  $('page-'+stage).innerHTML=html;
+}
+function sortBy(stage,key){
+  const v=viewState[stage];
+  if(v.sort===key)v.dir=v.dir==='asc'?'desc':'asc'; else{v.sort=key;v.dir=(key==='stageSince')?'desc':'asc';}
+  renderStage(stage);
+}
+function cellHTML(d,key){
+  switch(key){
+    case 'code':return `<span class="code">${esc(d.code)}</span>`;
+    case 'name':return `<div class="dname">${esc(d.name)}</div>`+(d.notes?`<div class="dnote"><i class="ti ti-note"></i> ${esc(d.notes)}</div>`:'');
+    case 'area':return `<span class="area-tag"><span class="area-dot" style="background:${AREAS[d.area]||'#999'}"></span>${esc(d.area)}</span>`+(d.email?`<div class="dnote">${esc(d.email)}</div>`:'');
+    case 'version':return esc(d.version||'—');
+    case 'expiry':{const s=expiryStatus(d.expiry);return d.expiry?`<div>${fmtDate(d.expiry)}</div><span class="chip ${s.k}">${esc(s.t)}</span>`:'<span class="chip none">Sin fecha</span>';}
+    case 'folder':return `<div class="folder">${esc(d.folder)}</div>`;
+    case 'stageSince':return fmtDate(d.stageSince);
+    case 'actions':return `<div class="actions">
+      <button class="btn sm icon" title="Generar correo" onclick="goToEmail('${esc(d.id)}')"><i class="ti ti-mail"></i></button>
+      <button class="btn sm icon" title="Editar" onclick="openEditModal('${esc(d.id)}')"><i class="ti ti-pencil"></i></button>
+      <button class="btn sm icon" title="Eliminar" onclick="openDel('${esc(d.id)}')"><i class="ti ti-trash"></i></button></div>`;
+  }
+  return '';
+}
+function sortVal(d,key){
+  if(key==='expiry') return d.expiry||'9999-99-99';
+  return (d[key]||'').toString().toLowerCase();
+}
+function renderStage(stage){
+  const v=viewState[stage]; const q=v.q.trim().toLowerCase();
+  let list=docs.filter(d=>d.stage===stage);
+  if(v.area)list=list.filter(d=>d.area===v.area);
+  if(q)list=list.filter(d=>(d.code+' '+d.name+' '+d.notes+' '+d.area).toLowerCase().includes(q));
+  list.sort((a,b)=>{const x=sortVal(a,v.sort),y=sortVal(b,v.sort);const c=x<y?-1:x>y?1:0;return v.dir==='asc'?c:-c;});
+  const box=$('tbl-'+stage); if(!box)return;
+  if(!list.length){
+    const total=docs.filter(d=>d.stage===stage).length;
+    box.innerHTML=`<div class="empty"><i class="ti ti-inbox"></i>${esc(total?'Ningún documento coincide con el filtro.':STAGES[stage].empty)}</div>`;
+    return;
+  }
+  const head=COLS.map(c=>{
+    if(!c.sortable)return `<th>${esc(c.label)}</th>`;
+    const arrow=v.sort===c.key?(v.dir==='asc'?' ↑':' ↓'):'';
+    return `<th class="sortable" onclick="sortBy('${stage}','${c.key}')">${esc(c.label)}${arrow}</th>`;
+  }).join('');
+  box.innerHTML=`<table><thead><tr>${head}</tr></thead><tbody>`+
+    list.map(d=>`<tr>${COLS.map(c=>`<td>${cellHTML(d,c.key)}</td>`).join('')}</tr>`).join('')+`</tbody></table>`;
+}
+
+/* ============ Página de correo ============ */
+const emailState={type:'consultar',mode:'platform',docId:'',q1:true,q2:true};
+
+function buildEmailPage(){
+  const typeOpts=Object.keys(EMAIL_TYPES).map(k=>`<div class="type-opt" id="et-${k}" onclick="setEmailType('${k}')">
+      <i class="ti ${EMAIL_TYPES[k].icon}"></i><div><b>${esc(EMAIL_TYPES[k].label)}</b><span>${esc(EMAIL_TYPES[k].desc)}</span></div></div>`).join('');
+  $('page-correo').innerHTML=`
+    <div class="page-head"><div><h2>Generación de correo</h2>
+      <p>Genera el texto listo para copiar y pegar en Outlook. Esta página no mueve documentos entre etapas.</p></div></div>
+    <div class="email-grid">
+      <div>
+        <div class="card panel" style="margin-bottom:18px"><h3><span class="step-n">1</span> Tipo de correo</h3>
+          ${typeOpts}
+          <div id="subq-wrap" class="subq" style="display:none">
+            <div class="fl">Preguntas a incluir</div>
+            <label><input type="checkbox" id="eq1" checked onchange="emailState.q1=this.checked;regenerateEmail()"/> ¿Se sigue el proceso? ¿Qué cambiarían?</label>
+            <label><input type="checkbox" id="eq2" checked onchange="emailState.q2=this.checked;regenerateEmail()"/> ¿Si usan el formato? ¿Qué cambiarían?</label>
+          </div>
+        </div>
+        <div class="card panel"><h3><span class="step-n">2</span> Proceso / documento</h3>
+          <div class="seg"><button id="seg-platform" onclick="setEmailMode('platform')">Elegir de la plataforma</button><button id="seg-manual" onclick="setEmailMode('manual')">Ingresar datos</button></div>
+          <div id="e-platform"><select id="e-docsel" class="field" onchange="setEmailDoc(this.value)"></select>
+            <div class="hint">Aparecen todos los documentos registrados, de cualquier etapa.</div></div>
+          <div id="e-manual" style="display:none">${docFormHTML('e')}
+            <div class="note">Los datos ingresados aquí solo sirven para generar el correo; no se guardan en la plataforma.</div></div>
+        </div>
+      </div>
+      <div class="card panel"><h3><span class="step-n">3</span> Correo generado</h3><div id="e-output"></div></div>
+    </div>`;
+  clearDocForm('e'); renderEmailControls(); refreshEmailDocSelect(); regenerateEmail();
+}
+function renderEmailControls(){
+  Object.keys(EMAIL_TYPES).forEach(k=>{const el=$('et-'+k);if(el)el.classList.toggle('sel',emailState.type===k);});
+  const sw=$('subq-wrap'); if(sw)sw.style.display=emailState.type==='desempeno'?'block':'none';
+  const sp=$('seg-platform'),sm=$('seg-manual');
+  if(sp){sp.classList.toggle('on',emailState.mode==='platform');sm.classList.toggle('on',emailState.mode==='manual');
+    $('e-platform').style.display=emailState.mode==='platform'?'block':'none';
+    $('e-manual').style.display=emailState.mode==='manual'?'block':'none';}
+}
+function refreshEmailDocSelect(){
+  const sel=$('e-docsel'); if(!sel)return;
+  let html='<option value="">Selecciona un documento…</option>';
+  STAGE_KEYS.forEach(s=>{
+    const list=docs.filter(d=>d.stage===s).sort((a,b)=>a.code.localeCompare(b.code));
+    if(!list.length)return;
+    html+=`<optgroup label="${esc(STAGES[s].short)}">`+list.map(d=>`<option value="${esc(d.id)}">${esc(d.code)} — ${esc(d.name)}</option>`).join('')+'</optgroup>';
+  });
+  sel.innerHTML=html;
+  if(emailState.docId && docs.some(d=>d.id===emailState.docId)) sel.value=emailState.docId; else emailState.docId='';
+}
+function setEmailType(t){emailState.type=t;renderEmailControls();regenerateEmail();}
+function setEmailMode(m){emailState.mode=m;renderEmailControls();regenerateEmail();}
+function setEmailDoc(id){emailState.docId=id;regenerateEmail();}
+function goToEmail(id){
+  const d=docs.find(x=>x.id===id); if(!d)return;
+  emailState.mode='platform'; emailState.docId=id; emailState.type=DEFAULT_TYPE_BY_STAGE[d.stage]||'consultar';
+  location.hash='#correo';
+  refreshEmailDocSelect(); renderEmailControls(); regenerateEmail();
+}
+function currentEmailDoc(){
+  if(emailState.mode==='platform') return docs.find(d=>d.id===emailState.docId)||null;
+  const v=readDocForm('e');
+  if(!v.code&&!v.name&&!v.area) return null;
+  return v;
+}
+function dataBlock(d){
+  const L=[];
+  L.push('Código: '+(d.code||'[código]'));
+  L.push('Documento: '+(d.name||'[nombre del documento]'));
+  L.push('Versión: '+(d.version||'—'));
+  L.push('Área: '+(d.area||'[área]'));
+  if(d.issued)L.push('Fecha de emisión: '+fmtDate(d.issued));
+  if(d.expiry)L.push('Fecha de vencimiento: '+fmtDate(d.expiry));
+  if(d.folder)L.push('Ubicación: '+d.folder);
+  if(d.notes)L.push('Notas: '+d.notes);
+  return L.join('\n');
+}
+function vigenciaLine(d){
+  if(!d.expiry)return '';
+  const n=daysUntil(d.expiry); const f=fmtDate(d.expiry);
+  if(n===null)return '';
+  if(n<0)return 'El documento venció el '+f+' (hace '+(-n)+' días).';
+  if(n===0)return 'El documento vence hoy ('+f+').';
+  return 'El documento vence el '+f+' (en '+n+' días).';
+}
+function buildEmail(type,d){
+  const area=d.area||'[área]';
+  const code=d.code||'[código]', name=d.name||'[nombre del documento]';
+  const greet='Estimado/a Jefe de '+area+':\n\n';
+  const sign='\n\nAtentamente,\nGestión de Procesos\nXochi Autopista';
+  const vig=vigenciaLine(d);
+  let subject='', body='';
+  if(type==='consultar'){
+    subject='Consulta del proceso '+code+' – '+name;
+    body=greet+'Desde Gestión de Procesos estamos trabajando en el documento «'+name+'», que corresponde a su área. Para definirlo correctamente necesitamos consultar el proceso con usted.\n\nLe solicitamos agendar una reunión breve para revisar cómo se ejecuta actualmente, quiénes participan y qué registros se generan. Por favor indíqueme dos o tres horarios en los que le sea posible reunirse.\n\nDatos del documento:\n'+dataBlock(d)+sign;
+  } else if(type==='actualizar'){
+    subject='Solicitud de actualización del documento '+code+' – '+name;
+    body=greet+'Le escribimos para solicitar la actualización del documento «'+name+'», perteneciente a su área.'+(vig?'\n\n'+vig:'')+'\n\nLe pedimos revisar el contenido, indicar los cambios necesarios y confirmar la fecha en la que podrá entregarlos, de modo que podamos publicar la nueva versión y comunicarla al equipo.\n\nDatos del documento:\n'+dataBlock(d)+sign;
+  } else if(type==='comunicar'){
+    subject='Comunicación del proceso '+code+' – '+name;
+    body=greet+'Le informamos que el documento «'+name+'» ya se encuentra disponible en la ubicación indicada abajo.\n\nLe solicitamos socializarlo con su equipo y confirmar por este medio cuando la comunicación se haya realizado. Si desea que acompañemos la presentación al equipo, con gusto coordinamos una sesión.\n\nDatos del documento:\n'+dataBlock(d)+sign;
+  } else {
+    subject='Desempeño del proceso '+code+' – '+name;
+    let qs=[]; let n=1;
+    if(emailState.q1){qs.push(n+'. ¿Se sigue el proceso?\n   ¿Qué cambiarían?\n   Respuesta:');n++;}
+    if(emailState.q2){qs.push(n+'. ¿Usan el formato?\n   ¿Qué cambiarían?\n   Respuesta:');n++;}
+    if(!qs.length) qs.push('(Selecciona al menos una pregunta a incluir.)');
+    body=greet+'Como parte del seguimiento al desempeño de los procesos, estamos revisando «'+name+'», de su área. Agradecemos nos ayude respondiendo lo siguiente:\n\n'+qs.join('\n\n')+'\n\nDatos del documento:\n'+dataBlock(d)+sign;
+  }
+  return {subject,body};
+}
+function regenerateEmail(){
+  const out=$('e-output'); if(!out)return;
+  const d=currentEmailDoc();
+  if(!d){
+    out.innerHTML='<div class="empty"><i class="ti ti-mail-opened"></i>'+(emailState.mode==='platform'?'Elige un documento para generar el correo.':'Completa al menos código, nombre o área para generar el correo.')+'</div>';
+    return;
+  }
+  const e=buildEmail(emailState.type,d);
+  const to=d.email||'';
+  const field=(id,label,val,rows)=>`<div class="out-field"><div class="out-head"><span>${label}</span><button class="btn sm" onclick="copyField('${id}',this)"><i class="ti ti-copy"></i> Copiar</button></div>
+      <textarea class="out-box" id="${id}" rows="${rows}" readonly>${esc(val)}</textarea></div>`;
+  out.innerHTML=field('o-to','Para',to,1)+field('o-subject','Asunto',e.subject,1)+field('o-body','Mensaje',e.body,16)+
+    (to?'':'<div class="note">Este documento no tiene correo registrado; agrégalo en la ficha para que aparezca en «Para».</div>');
+}
+function copyField(id,btn){
+  const el=$(id); if(!el)return;
+  const done=()=>{const o=btn.innerHTML;btn.innerHTML='<i class="ti ti-check"></i> Copiado';setTimeout(()=>{btn.innerHTML=o;},1600);};
+  const fallback=()=>{el.focus();el.select();try{document.execCommand('copy');done();}catch(e){toast('Selecciona el texto y copia con Ctrl+C');}};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(el.value).then(done).catch(fallback);}else fallback();
+}
+
+/* ============ Navegación ============ */
+const PAGES=['creacion','actualizacion','comunicacion','correo'];
+function renderNav(){
+  const cur=currentPage();
+  const items=STAGE_KEYS.map(k=>`<a href="#${k}" class="${cur===k?'active':''}"><i class="ti ${STAGES[k].icon}"></i> ${esc(STAGES[k].title)} <span class="count">${docs.filter(d=>d.stage===k).length}</span></a>`);
+  items.push(`<a href="#correo" class="${cur==='correo'?'active':''}"><i class="ti ti-mail"></i> Generación de correo</a>`);
+  $('nav').innerHTML=items.join('');
+}
+function currentPage(){const h=(location.hash||'').replace('#','');return PAGES.includes(h)?h:'creacion';}
+function showPage(){
+  const cur=currentPage();
+  PAGES.forEach(p=>$('page-'+p).classList.toggle('active',p===cur));
+  renderNav();
+  if(cur==='correo'){refreshEmailDocSelect();renderEmailControls();regenerateEmail();}
+  window.scrollTo(0,0);
+}
+function renderAll(){
+  STAGE_KEYS.forEach(k=>{refreshMoveSelect(k);renderStage(k);});
+  refreshEmailDocSelect(); regenerateEmail(); renderNav();
+}
+async function init(){
+  STAGE_KEYS.forEach(buildStageShell);
+  buildEmailPage();
+  window.addEventListener('hashchange',showPage);
+  document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('mousedown',e=>{if(e.target===o)o.classList.remove('show');}));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.overlay.show').forEach(o=>o.classList.remove('show'));});
+  await loadDocs();
+  renderAll(); showPage();
+}
+init();
+</script>
+</body>
+</html>
